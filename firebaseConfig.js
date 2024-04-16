@@ -3,13 +3,8 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getDatabase } from "firebase/database";
 import { getStorage } from "firebase/storage";
-import {
-  getAuth,
-  setPersistence,
-  browserSessionPersistence,
-} from "firebase/auth";
-// If you need React Native specific persistence, you might use AsyncStorage with your custom setup,
-// but typically, Firebase manages persistence internally in React Native apps without needing AsyncStorage.
+import { getAuth } from "firebase/auth";
+import firebase from "firebase/compat/app";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -27,10 +22,20 @@ const app = initializeApp(firebaseConfig);
 
 // Initialize services
 const auth = getAuth(app);
-// Set persistence to LOCAL by default for web and React Native applications (adjust if necessary)
-setPersistence(auth, browserSessionPersistence).catch((error) => {
-  console.error("Firebase Auth persistence setting failed:", error);
-});
+
+// Manually set up AsyncStorage for Firebase Auth persistence
+auth.useDeviceLanguage(); // Optional: sets the language to the device's preferred language
+
+const persistAuthState = async () => {
+  try {
+    await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+  } catch (error) {
+    console.error("Failed to persist authentication state:", error);
+  }
+};
+
+
+persistAuthState();
 
 const db = getFirestore(app);
 const database = getDatabase(app);
